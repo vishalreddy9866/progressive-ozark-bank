@@ -1,1 +1,4 @@
-com/pob/account/App.class
+com/pob/account/repository/AccountRepository.class
+com/pob/account/service/AccountService.class
+com/pob/account/AccountServiceApplication.class
+com/pob/account/model/Account.class
