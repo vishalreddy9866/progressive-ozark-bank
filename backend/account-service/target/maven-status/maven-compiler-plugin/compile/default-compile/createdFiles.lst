@@ -1,4 +1,7 @@
-com/pob/account/repository/AccountRepository.class
+com/pob/account/security/JwtUtils.class
+com/pob/account/config/DataLoader.class
 com/pob/account/service/AccountService.class
+com/pob/account/controller/AccountController.class
+com/pob/account/repository/AccountRepository.class
 com/pob/account/AccountServiceApplication.class
 com/pob/account/model/Account.class
