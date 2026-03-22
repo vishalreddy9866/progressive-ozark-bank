@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+@CrossOrigin(origins ={ "http://localhost:5173","http://localhost:5174"})
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {
@@ -16,6 +17,8 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<?> authenticateUser(@RequestBody LoginRequest loginRequest) {
+      
+        System.out.println(">>> [CONNECTION SUCCESS] React just called the Login API! <<<");
         // In a real app, you'd verify the password against the DB here.
         // For now, we'll generate a token if the user is "admin"
         if ("admin".equals(loginRequest.getUsername()) && "password".equals(loginRequest.getPassword())) {
