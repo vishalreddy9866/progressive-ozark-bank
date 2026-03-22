@@ -1,5 +1,6 @@
 com/pob/account/security/JwtUtils.class
 com/pob/account/config/DataLoader.class
+com/pob/account/security/AuthTokenFilter.class
 com/pob/account/service/AccountService.class
 com/pob/account/controller/AccountController.class
 com/pob/account/repository/AccountRepository.class
