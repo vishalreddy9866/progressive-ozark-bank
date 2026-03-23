@@ -18,6 +18,9 @@ public class Account {
     @Column(unique = true, nullable = false)
     private String accountNumber;
 
+    // ADD THIS LINE HERE:
+    private String accountHolderName; 
+
     private String accountType; // SAVINGS, CHECKING
     private Double balance;
     private String status; // ACTIVE, PENDING

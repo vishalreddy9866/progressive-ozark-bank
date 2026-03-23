@@ -1,22 +1,24 @@
 import React, { useEffect, useState } from 'react';
-import { LayoutDashboard, Wallet, LogOut, Landmark, Loader2, AlertCircle, RefreshCcw } from 'lucide-react';
+import { LayoutDashboard, Wallet, LogOut, Landmark, Loader2, AlertCircle, RefreshCcw, Search } from 'lucide-react';
 import axios from 'axios';
 
 function Dashboard() {
   const [accounts, setAccounts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  
+  // STEP 1: Search State
+  const [searchTerm, setSearchTerm] = useState('');
 
   const handleLogout = () => {
     localStorage.removeItem('pob_token');
-    window.location.href = '/'; // Simple hard redirect to reset state
+    window.location.href = '/'; 
   };
 
   useEffect(() => {
     const fetchAccounts = async () => {
       const token = localStorage.getItem('pob_token');
       
-      // Safety check: if no token, kick back to login
       if (!token) {
         window.location.href = '/';
         return;
@@ -24,12 +26,10 @@ function Dashboard() {
 
       try {
         setLoading(true);
-        // We pass page=0 and size=200 to see more data at once from your Pageable backend
         const response = await axios.get('http://localhost:8081/api/accounts?page=0&size=200', {
           headers: { Authorization: `Bearer ${token}` }
         });
 
-        // IMPORTANT: Access .content because your backend returns a Page<Account> object
         setAccounts(response.data.content || []);
         
       } catch (err) {
@@ -43,8 +43,19 @@ function Dashboard() {
     fetchAccounts();
   }, []);
 
-  // Calculate Total Balance from the 200+ accounts
-  const totalBalance = accounts.reduce((sum, acc) => sum + (acc.balance || 0), 0);
+  // STEP 2: Filtering Logic
+  // This calculates a new list every time 'searchTerm' or 'accounts' changes
+  const filteredAccounts = accounts.filter((acc) => {
+    const search = searchTerm.toLowerCase();
+    return (
+      acc.accountHolderName?.toLowerCase().includes(search) ||
+      acc.accountNumber?.toLowerCase().includes(search)
+    );
+  });
+
+  // STEP 3: Dynamic Total Balance
+  // Now sums only the accounts currently visible in your search
+  const totalBalance = filteredAccounts.reduce((sum, acc) => sum + (acc.balance || 0), 0);
 
   return (
     <div className="min-h-screen bg-slate-950 text-white p-8">
@@ -83,6 +94,20 @@ function Dashboard() {
           </div>
         </div>
 
+        {/* Search Input UI */}
+        <div className="mb-6 relative">
+          <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+            <Search className="h-5 w-5 text-slate-500" />
+          </div>
+          <input 
+            type="text"
+            placeholder="Search by holder name or account number (e.g. POB-e9aa)..."
+            className="w-full bg-slate-900 border border-slate-800 rounded-xl py-3.5 pl-12 pr-4 text-white focus:ring-2 focus:ring-blue-500 outline-none transition-all placeholder:text-slate-600 shadow-lg"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+        </div>
+
         {/* Account Data Table Area */}
         <div className="bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl overflow-hidden">
           <div className="p-6 border-b border-slate-800 flex justify-between items-center bg-slate-900/50">
@@ -91,7 +116,7 @@ function Dashboard() {
               <h2 className="text-xl font-semibold">Managed Accounts</h2>
             </div>
             <span className="bg-blue-600/10 text-blue-400 text-xs px-3 py-1 rounded-full border border-blue-600/20">
-              {accounts.length} Active Records
+              {filteredAccounts.length} Records Found
             </span>
           </div>
 
@@ -112,7 +137,7 @@ function Dashboard() {
             ) : (
               <div className="overflow-x-auto">
                 <table className="w-full text-left">
-                  <thead className="bg-slate-800/30 text-slate-400 text-xs uppercase tracking-widest">
+                  <thead className="bg-slate-800/30 text-slate-400 text-xs uppercase tracking-widest border-b border-slate-800">
                     <tr>
                       <th className="px-6 py-4 font-semibold">Account Number</th>
                       <th className="px-6 py-4 font-semibold">Account Holder</th>
@@ -120,17 +145,30 @@ function Dashboard() {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-800">
-                    {accounts.map((account) => (
-                      <tr key={account.accountNumber} className="hover:bg-slate-800/20 transition-colors">
-                        <td className="px-6 py-4 font-mono text-sm text-blue-400">{account.accountNumber}</td>
-                        <td className="px-6 py-4 text-slate-200 font-medium">{account.accountHolderName}</td>
-                        <td className="px-6 py-4 text-right">
-                          <span className="text-green-400 font-bold">
-                            ${account.balance?.toLocaleString(undefined, { minimumFractionDigits: 2 })}
-                          </span>
+                    {/* STEP 4: Changed mapping from 'accounts' to 'filteredAccounts' */}
+                    {filteredAccounts.length > 0 ? (
+                      filteredAccounts.map((account) => (
+                        <tr key={account.accountNumber} className="hover:bg-slate-800/20 transition-colors group">
+                          <td className="px-6 py-4 font-mono text-sm text-blue-400 group-hover:text-blue-300">
+                            {account.accountNumber}
+                          </td>
+                          <td className="px-6 py-4 text-slate-200 font-medium">
+                            {account.accountHolderName}
+                          </td>
+                          <td className="px-6 py-4 text-right">
+                            <span className="text-green-400 font-bold font-mono">
+                              ${account.balance?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                            </span>
+                          </td>
+                        </tr>
+                      ))
+                    ) : (
+                      <tr>
+                        <td colSpan="3" className="px-6 py-12 text-center text-slate-500">
+                          No matching records found for "{searchTerm}"
                         </td>
                       </tr>
-                    ))}
+                    )}
                   </tbody>
                 </table>
               </div>
