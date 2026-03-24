@@ -7,15 +7,20 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import java.util.List;
+import com.pob.account.model.Transaction;
+import com.pob.account.repository.TransactionRepository;
 
 @RestController
 @RequestMapping("/api/accounts")
 public class AccountController {
 
     private final AccountService accountService;
+    private final TransactionRepository transactionRepository; // Inject this
 
-    public AccountController(AccountService accountService) {
+    public AccountController(AccountService accountService, TransactionRepository transactionRepository) {
         this.accountService = accountService;
+        this.transactionRepository = transactionRepository;
     }
 
     // API to create an account (Onboarding)
@@ -49,5 +54,19 @@ public class AccountController {
     public ResponseEntity<Void> deleteAccount(@PathVariable Long id) {
         accountService.deleteAccount(id);
         return ResponseEntity.noContent().build(); 
+    }
+
+
+    // UPDATE: The "Pencil" logic
+@PutMapping("/{id}")
+public ResponseEntity<Account> updateAccount(@PathVariable Long id, @RequestBody Account details) {
+    return ResponseEntity.ok(accountService.updateAccount(id, details));
+}
+
+@GetMapping("/{id}/transactions")
+    public ResponseEntity<List<Transaction>> getTransactions(@PathVariable Long id) {
+        // REAL DATA: Fetching from MariaDB/MySQL instead of hardcoding
+        List<Transaction> history = transactionRepository.findByAccountIdOrderByTimestampDesc(id);
+        return ResponseEntity.ok(history);
     }
 }
