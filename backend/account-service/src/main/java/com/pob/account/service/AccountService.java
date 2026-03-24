@@ -3,9 +3,10 @@ package com.pob.account.service;
 import com.pob.account.model.Account;
 import com.pob.account.repository.AccountRepository;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import java.util.Optional;
+import org.springframework.data.domain.Pageable;
+
 
 @Service
 public class AccountService {
@@ -22,8 +23,8 @@ public class AccountService {
     }
 
     // Fetching account with Pagination (To handle 1M+ records efficiently)
-    public Page<Account> getAllAccounts(int page, int size) {
-        return accountRepository.findAll(PageRequest.of(page, size));
+    public Page<Account> getAllAccounts(Pageable pageable) {
+        return accountRepository.findAll(pageable);
     }
 
     public Optional<Account> getAccountByNumber(String accountNumber) {

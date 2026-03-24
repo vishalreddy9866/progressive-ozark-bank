@@ -3,6 +3,8 @@ package com.pob.account.controller;
 import com.pob.account.model.Account;
 import com.pob.account.service.AccountService;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -19,15 +21,19 @@ public class AccountController {
     // API to create an account (Onboarding)
     @PostMapping
     public ResponseEntity<Account> createAccount(@RequestBody Account account) {
-        return ResponseEntity.ok(accountService.createAccount(account));
+    // Basic validation: Ensure account number isn't null
+        if (account.getAccountNumber() == null) {
+            return ResponseEntity.badRequest().build();
+        }
+        Account savedAccount = accountService.createAccount(account);
+        return ResponseEntity.status(HttpStatus.CREATED).body(savedAccount);
     }
 
-    // API to fetch all accounts with Pagination (Performance Optimization)
+   
     @GetMapping
-    public ResponseEntity<Page<Account>> getAllAccounts(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size) {
-        return ResponseEntity.ok(accountService.getAllAccounts(page, size));
+    // By adding 'Pageable pageable', Java will now "listen" to the &sort=id,desc from React
+    public Page<Account> getAllAccounts(Pageable pageable) {
+        return accountService.getAllAccounts(pageable);
     }
 
     // API to fetch a specific account by number
