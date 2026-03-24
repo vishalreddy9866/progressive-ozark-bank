@@ -30,4 +30,8 @@ public class AccountService {
     public Optional<Account> getAccountByNumber(String accountNumber) {
         return accountRepository.findByAccountNumber(accountNumber);
     }
+
+    public void deleteAccount(Long id) {
+        accountRepository.deleteById(id);
+    }
 }
