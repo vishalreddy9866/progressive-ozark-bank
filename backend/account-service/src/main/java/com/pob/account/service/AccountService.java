@@ -41,6 +41,44 @@ public class AccountService {
         return savedAccount;
     }
 
+
+    @Transactional
+public void transferMoney(Long fromAccountId, Long toAccountId, Double amount) {
+    // 1. Fetch both accounts
+    Account fromAccount = accountRepository.findById(fromAccountId)
+            .orElseThrow(() -> new RuntimeException("Source account not found"));
+    Account toAccount = accountRepository.findById(toAccountId)
+            .orElseThrow(() -> new RuntimeException("Destination account not found"));
+
+    // 2. Validation: Check if candidate has enough money!
+    if (fromAccount.getBalance() < amount) {
+        throw new RuntimeException("Insufficient funds for transfer");
+    }
+
+    // 3. Perform the Math
+    fromAccount.setBalance(fromAccount.getBalance() - amount);
+    toAccount.setBalance(toAccount.getBalance() + amount);
+
+    // 4. Save updated balances
+    accountRepository.save(fromAccount);
+    accountRepository.save(toAccount);
+
+    // 5. Create Audit Trail (Transaction Records)
+    Transaction debit = new Transaction();
+    debit.setAccountId(fromAccountId);
+    debit.setDescription("Transfer to " + toAccount.getAccountHolderName());
+    debit.setAmount(amount);
+    debit.setType("DEBIT");
+    transactionRepository.save(debit);
+
+    Transaction credit = new Transaction();
+    credit.setAccountId(toAccountId);
+    credit.setDescription("Transfer from " + fromAccount.getAccountHolderName());
+    credit.setAmount(amount);
+    credit.setType("CREDIT");
+    transactionRepository.save(credit);
+}
+
     // Fetching account with Pagination (To handle 1M+ records efficiently)
     public Page<Account> getAllAccounts(Pageable pageable) {
         return accountRepository.findAll(pageable);

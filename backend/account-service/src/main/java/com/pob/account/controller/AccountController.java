@@ -16,7 +16,7 @@ import com.pob.account.repository.TransactionRepository;
 public class AccountController {
 
     private final AccountService accountService;
-    private final TransactionRepository transactionRepository; // Inject this
+    private final TransactionRepository transactionRepository; 
 
     public AccountController(AccountService accountService, TransactionRepository transactionRepository) {
         this.accountService = accountService;
@@ -69,4 +69,11 @@ public ResponseEntity<Account> updateAccount(@PathVariable Long id, @RequestBody
         List<Transaction> history = transactionRepository.findByAccountIdOrderByTimestampDesc(id);
         return ResponseEntity.ok(history);
     }
+
+
+    @PostMapping("/transfer")
+    public ResponseEntity<String> transfer(@RequestParam Long from, @RequestParam Long to, @RequestParam Double amount) {
+        accountService.transferMoney(from, to, amount);
+        return ResponseEntity.ok("Transfer Successful");
+}
 }
