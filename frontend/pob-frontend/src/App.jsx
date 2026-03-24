@@ -14,7 +14,7 @@ function App() {
   return (
     <main>
       {isLoggedIn ? (
-        <Dashboard />
+        <Dashboard key ="secure-session-active"/>
       ) : (
         <Login onLoginSuccess={handleLoginSuccess} />
       )}
